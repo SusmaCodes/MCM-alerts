@@ -79,16 +79,6 @@ const TopicManagement: React.FC = () => {
       } else {
         setTopics([]);
       }
-          name: 'Website Uptime Monitoring',
-          description: 'Monitor website availability and receive instant alerts when sites become unreachable or recover from downtime',
-      setTopics([{
-        id: '1',
-        name: 'Site Up/Down Monitoring',
-        description: 'Receive instant notifications when your monitored sites go up or down',
-        enabled: true,
-        lastChecked: new Date(),
-        createdAt: new Date(),
-      }]);
     } finally {
       setLoadingTopics(false);
     }
