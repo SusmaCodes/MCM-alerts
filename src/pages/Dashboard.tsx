@@ -421,7 +421,7 @@ const Dashboard: React.FC = () => {
                         onClick={acknowledgeAllNotifications}
                         size="sm"
                         variant="outline"
-                        className="text-xs h-8"
+                        className="text-xs h-8 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                       >
                         <Check className="h-3 w-3 mr-1" />
                         Mark All Read
@@ -431,7 +431,7 @@ const Dashboard: React.FC = () => {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => { navigate('/notifications'); markAsRead(); }}
-                      className="text-xs h-8"
+                      className="text-xs h-8 text-slate-600 hover:text-slate-800 hover:bg-slate-100"
                     >
                       View All
                     </Button>
@@ -447,12 +447,12 @@ const Dashboard: React.FC = () => {
                     placeholder="Search notifications..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-9"
+                    className="pl-10 h-9 border-slate-200 focus:border-slate-400 focus:ring-slate-400"
                   />
                 </div>
                 <div className="flex gap-2">
                   <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="w-[140px] h-9">
+                    <SelectTrigger className="w-[140px] h-9 border-slate-200 focus:border-slate-400">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
@@ -467,7 +467,7 @@ const Dashboard: React.FC = () => {
                   </Select>
                   
                   <Select value={filterPriority} onValueChange={setFilterPriority}>
-                    <SelectTrigger className="w-[140px] h-9">
+                    <SelectTrigger className="w-[140px] h-9 border-slate-200 focus:border-slate-400">
                       <SelectValue placeholder="Priority" />
                     </SelectTrigger>
                     <SelectContent>
@@ -499,28 +499,34 @@ const Dashboard: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div 
+                    className="space-y-2 max-h-96 overflow-y-auto pr-2"
+                    style={{
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#cbd5e1 #f1f5f9'
+                    }}
+                  >
                     {filteredNotifications.map((n) => (
                       <div 
                         key={n.id} 
                         className={`p-4 rounded-lg border transition-all duration-200 ${
                           !n.acknowledged 
-                            ? 'bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-100 border-l-4 border-l-blue-500' 
-                            : 'bg-muted/30 border-border'
+                            ? 'bg-slate-50 border-slate-200 shadow-sm ring-1 ring-slate-100 border-l-4 border-l-slate-600' 
+                            : 'bg-gray-50 border-gray-200'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <div className="font-semibold text-sm">{n.title}</div>
                             {!n.acknowledged && (
-                              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 font-medium">
+                              <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-700 font-medium">
                                 New
                               </Badge>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge 
-                              variant={n.priority === 'high' ? 'destructive' : n.priority === 'medium' ? 'secondary' : 'outline'}
+                              variant={n.priority === 'high' ? 'destructive' : n.priority === 'medium' ? 'default' : 'outline'}
                               className="text-xs"
                             >
                               {n.priority || 'medium'}
@@ -530,7 +536,7 @@ const Dashboard: React.FC = () => {
                                 onClick={() => acknowledgeNotification(n.id)}
                                 size="sm"
                                 variant="outline"
-                                className="h-7 w-7 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-100 border-blue-200"
+                                className="h-7 w-7 p-0 text-slate-600 hover:text-slate-800 hover:bg-slate-100 border-slate-300"
                               >
                                 <Check className="h-3 w-3" />
                               </Button>
@@ -541,7 +547,7 @@ const Dashboard: React.FC = () => {
                         <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
                           {new Date(n.created_at).toLocaleString()}
                           {n.acknowledged && (
-                            <span className="flex items-center gap-1 text-green-600 font-medium">
+                            <span className="flex items-center gap-1 text-emerald-600 font-medium">
                               <Check className="h-3 w-3" />
                               Read
                             </span>
@@ -560,14 +566,14 @@ const Dashboard: React.FC = () => {
                 <CardTitle className="text-center">🔔 Test Notifications</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <Button onClick={() => sendTestNotification('medium')} className="w-full mb-4 bg-primary hover:bg-primary/90">
+                <Button onClick={() => sendTestNotification('medium')} className="w-full mb-4 bg-slate-700 hover:bg-slate-800 text-white">
                   Test Notification
                 </Button>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button variant="outline" size="sm" onClick={() => sendTestNotification('low')} className="text-xs">
+                  <Button variant="outline" size="sm" onClick={() => sendTestNotification('low')} className="text-xs border-slate-300 text-slate-600 hover:bg-slate-50">
                     Low
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => sendTestNotification('medium')} className="text-xs">
+                  <Button variant="outline" size="sm" onClick={() => sendTestNotification('medium')} className="text-xs border-slate-300 text-slate-600 hover:bg-slate-50">
                     Medium
                   </Button>
                   <Button variant="destructive" size="sm" onClick={() => sendTestNotification('high')} className="text-xs">

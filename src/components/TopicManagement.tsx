@@ -57,8 +57,8 @@ const TopicManagement: React.FC = () => {
         console.error('Failed to load topics:', error);
         setTopics([{
           id: '1',
-          name: 'Site Up/Down Monitoring',
-          description: 'Receive instant notifications when your monitored sites go up or down',
+          name: 'Website Uptime Monitoring',
+          description: 'Monitor website availability and receive instant alerts when sites become unreachable or recover from downtime',
           enabled: true,
           lastChecked: new Date(),
           createdAt: new Date(),
@@ -79,8 +79,8 @@ const TopicManagement: React.FC = () => {
       } else {
         setTopics([]);
       }
-    } catch (error) {
-      console.error('Failed to load topics:', error);
+          name: 'Website Uptime Monitoring',
+          description: 'Monitor website availability and receive instant alerts when sites become unreachable or recover from downtime',
       setTopics([{
         id: '1',
         name: 'Site Up/Down Monitoring',
