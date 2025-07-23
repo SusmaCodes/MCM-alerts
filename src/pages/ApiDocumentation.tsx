@@ -51,6 +51,28 @@ const ApiDocumentation: React.FC = () => {
     "custom_field": "custom_value"
   },
   "timestamp": "${new Date().toISOString()}"
+}`,
+    uptimeMonitoring: `{
+  "type": "uptime_monitoring",
+  "title": "Website Down - Critical",
+  "message": "Website https://example.com is unreachable. Response timeout after 30 seconds.",
+  "url": "https://example.com",
+  "status_code": null,
+  "response_time": null,
+  "priority": "high",
+  "incident_id": "inc_${Date.now()}",
+  "timestamp": "${new Date().toISOString()}"
+}`,
+    uptimeRecovery: `{
+  "type": "uptime_recovery",
+  "title": "Website Recovered",
+  "message": "Website https://example.com is now accessible. Response time: 245ms",
+  "url": "https://example.com",
+  "status_code": 200,
+  "response_time": 245,
+  "priority": "medium",
+  "incident_id": "inc_${Date.now()}",
+  "timestamp": "${new Date().toISOString()}"
 }`
   };
 
@@ -151,6 +173,20 @@ const ApiDocumentation: React.FC = () => {
                 <p className="text-sm text-muted-foreground">
                   <strong>Method:</strong> POST | <strong>Auth:</strong> None Required | <strong>Content-Type:</strong> application/json
                 </p>
+                
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Additional Endpoints</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <code className="text-xs font-mono text-blue-800">GET {apiEndpoint}</code>
+                      <span className="text-blue-600">Fetch notifications</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <code className="text-xs font-mono text-blue-800">PUT {apiEndpoint}</code>
+                      <span className="text-blue-600">Acknowledge notifications</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -161,9 +197,11 @@ const ApiDocumentation: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="site-down" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="site-down">Site Down</TabsTrigger>
                     <TabsTrigger value="server-alert">Server Alert</TabsTrigger>
+                    <TabsTrigger value="uptime-down">Uptime Down</TabsTrigger>
+                    <TabsTrigger value="uptime-recovery">Recovery</TabsTrigger>
                     <TabsTrigger value="custom">Custom</TabsTrigger>
                   </TabsList>
                   
@@ -198,6 +236,44 @@ const ApiDocumentation: React.FC = () => {
                           size="sm"
                           className="absolute top-2 right-2"
                           onClick={() => copyToClipboard(examplePayloads.serverAlert)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="uptime-down" className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Uptime Monitoring - Site Down</Label>
+                      <div className="relative">
+                        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                          <code>{examplePayloads.uptimeMonitoring}</code>
+                        </pre>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => copyToClipboard(examplePayloads.uptimeMonitoring)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="uptime-recovery" className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Uptime Monitoring - Site Recovery</Label>
+                      <div className="relative">
+                        <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                          <code>{examplePayloads.uptimeRecovery}</code>
+                        </pre>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => copyToClipboard(examplePayloads.uptimeRecovery)}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -301,9 +377,18 @@ const ApiDocumentation: React.FC = () => {
                 <div>
                   <h4 className="font-medium mb-2">Required Fields</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• type</li>
                     <li>• title</li>
                     <li>• message</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">Optional Fields</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• type</li>
+                    <li>• priority</li>
+                    <li>• timestamp</li>
+                    <li>• metadata</li>
                   </ul>
                 </div>
 
@@ -313,6 +398,17 @@ const ApiDocumentation: React.FC = () => {
                     <li>• 200: Success</li>
                     <li>• 400: Bad Request</li>
                     <li>• 500: Server Error</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">Notification Types</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• uptime_monitoring</li>
+                    <li>• uptime_recovery</li>
+                    <li>• server_alert</li>
+                    <li>• site_down</li>
+                    <li>• custom</li>
                   </ul>
                 </div>
               </CardContent>
