@@ -320,6 +320,7 @@ const ApiDocumentation: React.FC = () => {
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="curl">cURL</TabsTrigger>
                     <TabsTrigger value="postman">Postman</TabsTrigger>
+                    <TabsTrigger value="topic">Topic API</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="curl" className="space-y-4">
@@ -338,6 +339,32 @@ const ApiDocumentation: React.FC = () => {
                     </div>
                   </TabsContent>
 
+                  <TabsContent value="topic" className="space-y-4">
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium mb-2">Topic-Specific Endpoint</h4>
+                        <div className="relative">
+                          <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                            <code>{`curl -X POST ${window.location.origin}/api/topics/site-monitoring \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "title": "Site Down Alert",
+    "message": "example.com is not responding",
+    "priority": "high"
+  }'`}</code>
+                          </pre>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => copyToClipboard(`curl -X POST ${window.location.origin}/api/topics/site-monitoring -H "Content-Type: application/json" -d '{"title": "Site Down Alert", "message": "example.com is not responding", "priority": "high"}'`)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
                   <TabsContent value="postman" className="space-y-4">
                     <div className="relative">
                       <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
@@ -422,6 +449,8 @@ const ApiDocumentation: React.FC = () => {
                   <ul className="text-sm text-muted-foreground space-y-1">
                     <li>• /api/topics/site-monitoring</li>
                     <li>• /api/topics/[custom-topic]</li>
+                    <li>• POST to topic-specific endpoints</li>
+                    <li>• GET topic notifications</li>
                   </ul>
                 </div>
               </CardContent>

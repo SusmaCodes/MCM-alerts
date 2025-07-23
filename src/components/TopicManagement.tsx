@@ -60,21 +60,6 @@ const TopicManagement: React.FC = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Failed to load topics:', error);
-        // Default topic for site monitoring
-        setTopics([{
-          id: '1',
-          name: 'Site Monitoring',
-          description: 'Monitor website uptime and downtime with instant alerts when your sites become unreachable or recover',
-          enabled: true,
-          subscribed: true,
-          apiEndpoint: generateApiEndpoint('Site Monitoring'),
-          lastChecked: new Date(),
-          createdAt: new Date(),
-        }]);
-        return;
-      }
 
       if (data && data.length > 0) {
         const formattedTopics = data.map(topic => ({
@@ -89,18 +74,42 @@ const TopicManagement: React.FC = () => {
         }));
         setTopics(formattedTopics);
       } else {
-        // Create default topic if none exist
-        const defaultTopic = {
-          id: '1',
-          name: 'Site Monitoring',
-          description: 'Monitor website uptime and downtime with instant alerts when your sites become unreachable or recover',
-          enabled: true,
-          subscribed: true,
-          apiEndpoint: generateApiEndpoint('Site Monitoring'),
-          lastChecked: new Date(),
-          createdAt: new Date(),
-        };
-        setTopics([defaultTopic]);
+        // Create default topic in Supabase if none exist
+        const apiEndpoint = generateApiEndpoint('Site Monitoring');
+        const { data: newTopic, error: createError } = await supabase
+          .from('topics')
+          .insert([{
+            name: 'Site Monitoring',
+            description: 'Monitor website uptime and downtime with instant alerts when your sites become unreachable or recover',
+            enabled: true,
+            api_endpoint: apiEndpoint,
+            last_checked: new Date().toISOString(),
+          }])
+          .select()
+          .single();
+
+        if (!createError && newTopic) {
+          const defaultTopic: Topic = {
+            id: newTopic.id,
+            name: newTopic.name,
+            description: newTopic.description,
+            enabled: newTopic.enabled,
+            subscribed: false,
+            apiEndpoint: newTopic.api_endpoint,
+            lastChecked: new Date(newTopic.last_checked),
+            createdAt: new Date(newTopic.created_at),
+          };
+          setTopics([defaultTopic]);
+        }
+      }
+
+      if (error) {
+        console.error('Failed to load topics:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load topics from database",
+          variant: "destructive",
+        });
       }
     } finally {
       setLoadingTopics(false);

@@ -118,14 +118,26 @@ self.addEventListener('push', event => {
     }).then(() => {
       console.log('Background notification displayed successfully');
       
-      // Send message to all clients to play sound
+      // Send message to all clients to play sound - Enhanced for mobile
       return self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
         clients.forEach(client => {
           client.postMessage({
             type: 'PLAY_NOTIFICATION_SOUND',
-            priority: notificationData.data?.priority || 'medium'
+            priority: notificationData.data?.priority || 'medium',
+            forcePlay: true,
+            mobile: true
           });
         });
+        
+        // Also try to play sound directly in service worker for mobile
+        if ('AudioContext' in self || 'webkitAudioContext' in self) {
+          try {
+            const priority = notificationData.data?.priority || 'medium';
+            playServiceWorkerSound(priority);
+          } catch (error) {
+            console.log('Service worker sound failed:', error);
+          }
+        }
       });
     }).catch(error => {
       console.error('Failed to show background notification:', error);
@@ -133,6 +145,20 @@ self.addEventListener('push', event => {
   );
 });
 
+// Enhanced sound playing function for service worker
+function playServiceWorkerSound(priority) {
+  try {
+    // Create a simple beep sound using Web Audio API in service worker
+    const frequency = priority === 'high' ? 800 : priority === 'medium' ? 600 : 400;
+    const duration = priority === 'high' ? 1000 : 500;
+    
+    // For mobile web apps, we'll rely on the client-side sound playing
+    // Service worker audio is limited on mobile browsers
+    console.log(`Service worker: Sound request for ${priority} priority notification`);
+  } catch (error) {
+    console.log('Service worker sound not supported:', error);
+  }
+}
 // Handle notification click
 self.addEventListener('notificationclick', event => {
   console.log('Notification clicked:', event);

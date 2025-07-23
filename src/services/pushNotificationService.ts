@@ -43,14 +43,14 @@ export class PushNotificationService {
 
   private handleServiceWorkerMessage(event: MessageEvent) {
     if (event.data?.type === 'PLAY_NOTIFICATION_SOUND') {
-      this.playNotificationSound(event.data.priority);
+      this.playNotificationSound(event.data.priority, event.data.forcePlay, event.data.mobile);
     }
   }
 
-  private async playNotificationSound(priority: 'low' | 'medium' | 'high' = 'medium') {
+  private async playNotificationSound(priority: 'low' | 'medium' | 'high' = 'medium', forcePlay = false, mobile = false) {
     try {
       const frequency = priority === 'high' ? 800 : priority === 'medium' ? 600 : 400;
-      const duration = priority === 'high' ? 1000 : 500;
+      const duration = mobile ? (priority === 'high' ? 1500 : 800) : (priority === 'high' ? 1000 : 500);
 
       if (this.audioContext) {
         if (this.audioContext.state === 'suspended') {
@@ -66,14 +66,17 @@ export class PushNotificationService {
         oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
         oscillator.type = 'sine';
 
-        const volume = priority === 'high' ? 0.3 : priority === 'medium' ? 0.2 : 0.1;
+        const volume = mobile ? 
+          (priority === 'high' ? 0.4 : priority === 'medium' ? 0.3 : 0.2) :
+          (priority === 'high' ? 0.3 : priority === 'medium' ? 0.2 : 0.1);
+          
         gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
 
         oscillator.start(this.audioContext.currentTime);
         oscillator.stop(this.audioContext.currentTime + duration / 1000);
 
-        console.log(`Played ${priority} priority notification sound`);
+        console.log(`Played ${priority} priority notification sound${mobile ? ' (mobile optimized)' : ''}`);
       }
     } catch (error) {
       console.error('Failed to play notification sound:', error);

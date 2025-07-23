@@ -215,7 +215,7 @@ const Dashboard: React.FC = () => {
   const playNotificationSound = async (priority: 'low' | 'medium' | 'high') => {
     try {
       const frequency = priority === 'high' ? 800 : priority === 'medium' ? 600 : 400;
-      const duration = priority === 'high' ? 1.0 : 0.5;
+      const duration = priority === 'high' ? 1.5 : 0.8; // Longer duration for mobile
       
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
@@ -232,12 +232,15 @@ const Dashboard: React.FC = () => {
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
       oscillator.type = 'sine';
       
-      const volume = priority === 'high' ? 0.3 : priority === 'medium' ? 0.2 : 0.1;
+      // Higher volume for mobile web apps
+      const volume = priority === 'high' ? 0.4 : priority === 'medium' ? 0.3 : 0.2;
       gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + duration);
+      
+      console.log(`Mobile-optimized ${priority} priority sound played`);
     } catch (error) {
       console.warn('Could not play notification sound:', error);
     }
