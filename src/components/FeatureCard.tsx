@@ -12,11 +12,12 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
   return (
     <Card
       className="
-        h-full border border-border bg-card
-        transition-shadow duration-300
-        hover:shadow-lg hover:-translate-y-1 hover:scale-[1.03]
+        h-full border border-slate-200 bg-white
+        transition-all duration-300
+        hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]
         focus:outline-none focus:ring-2 focus:ring-accent
         flex flex-col
+        group
       "
       role="region"
       aria-labelledby={`feature-title-${title}`}
@@ -25,14 +26,14 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
       <CardHeader className="text-center pb-6 pt-6">
         <div
           className="
-            mx-auto mb-5 p-5 rounded-full
-            bg-accent/15 hover:bg-accent/30
+            mx-auto mb-5 p-5 rounded-full 
+            bg-gradient-to-br from-blue-100 to-indigo-100 group-hover:from-blue-200 group-hover:to-indigo-200
             w-20 h-20 flex items-center justify-center
             transition-colors duration-300
           "
           aria-hidden="true"
         >
-          <Icon className="h-10 w-10 text-accent" />
+          <Icon className="h-10 w-10 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
         </div>
         <CardTitle
           id={`feature-title-${title}`}

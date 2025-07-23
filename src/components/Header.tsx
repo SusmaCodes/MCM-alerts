@@ -35,14 +35,14 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-6">
             <div className="relative flex items-center space-x-2">
               <button
-                aria-label={`Notifications: ${unreadCount} unread`}
+                aria-label={`Notifications${unreadCount > 0 ? `: ${unreadCount} unread` : ''}`}
                 className="relative focus:outline-none focus:ring-2 focus:ring-accent rounded"
               >
                 <Bell className="h-5 w-5 text-muted-foreground" />
                 {unreadCount > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold"
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs font-bold bg-red-500 text-white animate-pulse"
                   >
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Badge>

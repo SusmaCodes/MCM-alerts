@@ -185,6 +185,10 @@ const ApiDocumentation: React.FC = () => {
                       <code className="text-xs font-mono text-blue-800">PUT {apiEndpoint}</code>
                       <span className="text-blue-600">Acknowledge notifications</span>
                     </div>
+                    <div className="flex items-center justify-between">
+                      <code className="text-xs font-mono text-blue-800">POST /api/topics/[topic-slug]</code>
+                      <span className="text-blue-600">Topic-specific notifications</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -404,11 +408,20 @@ const ApiDocumentation: React.FC = () => {
                 <div>
                   <h4 className="font-medium mb-2">Notification Types</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• site_monitoring</li>
                     <li>• uptime_monitoring</li>
                     <li>• uptime_recovery</li>
                     <li>• server_alert</li>
                     <li>• site_down</li>
                     <li>• custom</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">Topic Endpoints</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• /api/topics/site-monitoring</li>
+                    <li>• /api/topics/[custom-topic]</li>
                   </ul>
                 </div>
               </CardContent>

@@ -19,6 +19,7 @@ const Dashboard: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [totalNotifications, setTotalNotifications] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
@@ -125,6 +126,7 @@ const Dashboard: React.FC = () => {
       }));
       
       setNotifications(notificationsWithAck);
+      setTotalNotifications(notificationsWithAck.length);
       setUnreadCount(notificationsWithAck.filter(n => !n.acknowledged).length);
     } catch (err) {
       console.error('Failed to load notifications:', err);

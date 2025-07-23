@@ -14,7 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Monitor } from 'lucide-react';
+import { Plus, Trash2, Monitor, Globe, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/services/notificationService';
 
@@ -23,6 +23,8 @@ interface Topic {
   name: string;
   description: string;
   enabled: boolean;
+  subscribed: boolean;
+  apiEndpoint: string;
   lastChecked: Date;
   createdAt: Date;
 }
@@ -37,13 +39,18 @@ const TopicManagement: React.FC = () => {
   const [creatingTopic, setCreatingTopic] = useState(false);
   const [togglingTopicId, setTogglingTopicId] = useState<string | null>(null);
   const [deletingTopicId, setDeletingTopicId] = useState<string | null>(null);
+  const [subscribingTopicId, setSubscribingTopicId] = useState<string | null>(null);
 
-  // NEW: Confirmation dialog for delete
   const [confirmDeleteTopic, setConfirmDeleteTopic] = useState<Topic | null>(null);
 
   useEffect(() => {
     loadTopics();
   }, []);
+
+  const generateApiEndpoint = (topicName: string) => {
+    const slug = topicName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return `${window.location.origin}/api/topics/${slug}`;
+  };
 
   const loadTopics = async () => {
     setLoadingTopics(true);
@@ -55,11 +62,14 @@ const TopicManagement: React.FC = () => {
 
       if (error) {
         console.error('Failed to load topics:', error);
+        // Default topic for site monitoring
         setTopics([{
           id: '1',
-          name: 'Website Uptime Monitoring',
-          description: 'Monitor website availability and receive instant alerts when sites become unreachable or recover from downtime',
+          name: 'Site Monitoring',
+          description: 'Monitor website uptime and downtime with instant alerts when your sites become unreachable or recover',
           enabled: true,
+          subscribed: true,
+          apiEndpoint: generateApiEndpoint('Site Monitoring'),
           lastChecked: new Date(),
           createdAt: new Date(),
         }]);
@@ -71,13 +81,26 @@ const TopicManagement: React.FC = () => {
           id: topic.id,
           name: topic.name,
           description: topic.description,
-          enabled: topic.enabled,
+          enabled: topic.enabled || false,
+          subscribed: topic.subscribed || false,
+          apiEndpoint: topic.api_endpoint || generateApiEndpoint(topic.name),
           lastChecked: topic.last_checked ? new Date(topic.last_checked) : new Date(),
           createdAt: topic.created_at ? new Date(topic.created_at) : new Date(),
         }));
         setTopics(formattedTopics);
       } else {
-        setTopics([]);
+        // Create default topic if none exist
+        const defaultTopic = {
+          id: '1',
+          name: 'Site Monitoring',
+          description: 'Monitor website uptime and downtime with instant alerts when your sites become unreachable or recover',
+          enabled: true,
+          subscribed: true,
+          apiEndpoint: generateApiEndpoint('Site Monitoring'),
+          lastChecked: new Date(),
+          createdAt: new Date(),
+        };
+        setTopics([defaultTopic]);
       }
     } finally {
       setLoadingTopics(false);
@@ -96,12 +119,16 @@ const TopicManagement: React.FC = () => {
 
     setCreatingTopic(true);
     try {
+      const apiEndpoint = generateApiEndpoint(newTopic.name);
+      
       const { data, error } = await supabase
         .from('topics')
         .insert([{
           name: newTopic.name.trim(),
           description: newTopic.description.trim(),
           enabled: true,
+          subscribed: false,
+          api_endpoint: apiEndpoint,
           last_checked: new Date().toISOString(),
         }])
         .select()
@@ -114,6 +141,8 @@ const TopicManagement: React.FC = () => {
         name: data.name,
         description: data.description,
         enabled: data.enabled,
+        subscribed: data.subscribed || false,
+        apiEndpoint: data.api_endpoint,
         lastChecked: new Date(data.last_checked),
         createdAt: new Date(data.created_at),
       };
@@ -179,7 +208,58 @@ const TopicManagement: React.FC = () => {
     }
   };
 
-  // NEW: Confirmed delete handler
+  const toggleSubscription = async (id: string) => {
+    if (subscribingTopicId) return;
+
+    const topic = topics.find(t => t.id === id);
+    if (!topic) return;
+
+    setTopics(prev =>
+      prev.map(t =>
+        t.id === id ? { ...t, subscribed: !t.subscribed } : t
+      )
+    );
+    setSubscribingTopicId(id);
+
+    try {
+      const { error } = await supabase
+        .from('topics')
+        .update({
+          subscribed: !topic.subscribed,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: topic.subscribed ? "Unsubscribed" : "Subscribed",
+        description: `You have ${topic.subscribed ? 'unsubscribed from' : 'subscribed to'} "${topic.name}"`,
+      });
+    } catch (error) {
+      console.error('Failed to toggle subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update subscription. Please try again.",
+        variant: "destructive",
+      });
+      setTopics(prev =>
+        prev.map(t =>
+          t.id === id ? { ...t, subscribed: topic.subscribed } : t
+        )
+      );
+    } finally {
+      setSubscribingTopicId(null);
+    }
+  };
+
+  const copyApiEndpoint = (endpoint: string, topicName: string) => {
+    navigator.clipboard.writeText(endpoint);
+    toast({
+      title: "Copied!",
+      description: `API endpoint for "${topicName}" copied to clipboard`,
+    });
+  };
+
   const confirmDelete = (topic: Topic) => setConfirmDeleteTopic(topic);
 
   const handleDeleteTopic = async () => {
@@ -228,12 +308,22 @@ const TopicManagement: React.FC = () => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   };
 
+  const subscribedCount = topics.filter(t => t.subscribed).length;
+  const enabledCount = topics.filter(t => t.enabled).length;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div>
           <CardTitle>Notification Subscriptions</CardTitle>
-          <Badge variant="outline" className="mt-2">{topics.filter(t => t.enabled).length} Active</Badge>
+          <div className="flex gap-2 mt-2">
+            <Badge variant="default" className="bg-blue-100 text-blue-800">
+              {subscribedCount} Subscribed
+            </Badge>
+            <Badge variant="outline" className="border-green-200 text-green-700">
+              {enabledCount} Active
+            </Badge>
+          </div>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -287,35 +377,89 @@ const TopicManagement: React.FC = () => {
           topics.map((topic) => (
             <div
               key={topic.id}
-              className="flex items-center justify-between p-4 border border-border rounded-lg transition-opacity duration-300 ease-in-out"
+              className="flex flex-col space-y-3 p-4 border border-border rounded-lg transition-opacity duration-300 ease-in-out"
               style={{ opacity: deletingTopicId === topic.id ? 0.5 : 1 }}
             >
-              <div className="flex items-center space-x-4">
-                <Monitor className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">{topic.name}</p>
-                  <p className="text-sm text-muted-foreground">{topic.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Last checked: {formatLastChecked(topic.lastChecked)}
-                  </p>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3 flex-1">
+                  <div className="mt-1">
+                    {topic.name === 'Site Monitoring' ? (
+                      <Globe className="h-5 w-5 text-blue-600" />
+                    ) : (
+                      <Monitor className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium">{topic.name}</p>
+                      {topic.subscribed && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                          Subscribed
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">{topic.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Last checked: {formatLastChecked(topic.lastChecked)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex flex-col items-end space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-muted-foreground">Active</span>
+                      <Switch
+                        checked={topic.enabled}
+                        onCheckedChange={() => toggleTopic(topic.id)}
+                        disabled={togglingTopicId === topic.id}
+                      />
+                    </div>
+                    <Button
+                      variant={topic.subscribed ? "destructive" : "default"}
+                      size="sm"
+                      onClick={() => toggleSubscription(topic.id)}
+                      disabled={subscribingTopicId === topic.id}
+                      className="text-xs h-7"
+                    >
+                      {subscribingTopicId === topic.id 
+                        ? 'Processing...' 
+                        : topic.subscribed 
+                          ? 'Unsubscribe' 
+                          : 'Subscribe'
+                      }
+                    </Button>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10"
+                    onClick={() => confirmDelete(topic)}
+                    disabled={deletingTopicId === topic.id}
+                    aria-label={`Delete topic ${topic.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <Switch
-                  checked={topic.enabled}
-                  onCheckedChange={() => toggleTopic(topic.id)}
-                  disabled={togglingTopicId === topic.id}
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10"
-                  onClick={() => confirmDelete(topic)}
-                  disabled={deletingTopicId === topic.id}
-                  aria-label={`Delete topic ${topic.name}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              
+              {/* API Endpoint Section */}
+              <div className="bg-gray-50 p-3 rounded-md border">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-700 mb-1">API Endpoint:</p>
+                    <code className="text-xs font-mono text-gray-600 break-all">
+                      {topic.apiEndpoint}
+                    </code>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyApiEndpoint(topic.apiEndpoint, topic.name)}
+                    className="ml-2 h-8 w-8 p-0"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))
